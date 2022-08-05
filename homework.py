@@ -104,6 +104,7 @@ def main():
         sys.exit()
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp: int = int(time.time())
+    message = ''
     while True:
         try:
             logging.info('Выполняем запрос к API.')
@@ -114,6 +115,11 @@ def main():
                 logging.debug('Изменение статуса не обнаружено.')
                 send_message(bot, message)
                 logging.info('Сообщение отправлено.')
+            else:
+                if message != 'ДЗ нет.':
+                    send_message(bot, message='ДЗ нет.')
+                    message = 'ДЗ нет.'
+                    logging.info('Сообщение отправлено.')
             current_timestamp: int = response.get('current_date')
         except Exception as error:
             message: str = f'Сбой в работе программы: {error}'
@@ -122,7 +128,7 @@ def main():
         except exceptions.NotSendMessageError() as e:
             logging.error(f'Сбой в работе программы: {e}')
         finally:
-            time.sleep(RETRY_TIME)
+            time.sleep(5.0)
 
 
 if __name__ == '__main__':
