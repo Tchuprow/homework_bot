@@ -1,2 +1,2 @@
-class NotSendMessageError():
+class NotSendMessageError(Exception):   
     pass
