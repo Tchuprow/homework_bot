@@ -1,4 +1,3 @@
-import exceptions
 import logging
 import os
 import requests
@@ -8,6 +7,8 @@ import time
 
 from dotenv import load_dotenv
 from http import HTTPStatus
+
+import exceptions
 
 load_dotenv()
 
