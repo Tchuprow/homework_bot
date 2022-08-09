@@ -1,14 +1,13 @@
+import exceptions
 import logging
 import os
-import sys
-import time
-from http import HTTPStatus
-
 import requests
+import sys
 import telegram
-from dotenv import load_dotenv
+import time
 
-import exceptions
+from dotenv import load_dotenv
+from http import HTTPStatus
 
 load_dotenv()
 
@@ -57,12 +56,14 @@ def get_api_answer(current_timestamp: int) -> dict:
     params: dict = {'from_date': timestamp}
     try:
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
+        if response.status_code != HTTPStatus.OK:
+            logging.error('Эндпоинт API-сервиса не доступен!')
+            raise requests.ConnectionError(
+                'Эндпоинт API-сервиса не доступен!'
+            )
     except Exception:
+        logging.error('Запрос к API не выполнен.')
         raise Exception('Запрос к API не выполнен.')
-    if response.status_code != HTTPStatus.OK:
-        raise requests.ConnectionError(
-            'Эндпоинт API-сервиса не доступен!'
-        )
     response: dict = response.json()
     return response
 
@@ -113,7 +114,7 @@ def main():
     current_timestamp = int(time.time())
     message: str = ''
     message_not_work: str = ''
-    message_error: str = ''
+    second_message_error: str = ''
     while True:
         try:
             logging.info('Выполняем запрос к API.')
@@ -128,17 +129,14 @@ def main():
                     message_not_work: str = 'ДЗ нет.'
                     send_message(bot, message_not_work)
             current_timestamp: int = response.get('current_date')
-        except requests.ConnectionError as e:
-            message_error = (f'Сбой в работе программы: {e}')
-            logging.error(message_error)
-            send_message(bot, message_error)
         except exceptions.NotSendMessageError as e:
             logging.error(f'Сбой в работе программы: {e}')
         except Exception as error:
-            if message_error == message:
-                message_error: str = f'Сбой в работе программы: {error}'
-                logging.error(message_error)
-                send_message(bot, message_error)
+            first_message_error: str = f'Сбой в работе программы: {error}'
+            if first_message_error != second_message_error:
+                logging.error(first_message_error)
+                send_message(bot, first_message_error)
+                second_message_error = first_message_error
         finally:
             time.sleep(RETRY_TIME)
 
