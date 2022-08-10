@@ -58,13 +58,17 @@ def get_api_answer(current_timestamp: int) -> dict:
     try:
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
         if response.status_code != HTTPStatus.OK:
-            logging.error('Эндпоинт API-сервиса не доступен!')
             raise requests.ConnectionError(
-                'Эндпоинт API-сервиса не доступен!'
+                f'API не доступен: status_code = {response.status_code},',
+                f'reason = {response.reason},',
+                f'text = {response.text}.'
             )
     except Exception:
-        logging.error('Запрос к API не выполнен.')
-        raise Exception('Запрос к API не выполнен.')
+        raise Exception(
+            f'Запрос к API не выполнен: ENDPOINT = {ENDPOINT},',
+            f'headers = {HEADERS},',
+            f'params = {params}.'
+        )
     response: dict = response.json()
     return response
 
